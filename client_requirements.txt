@@ -1,0 +1,343 @@
+Project 7 — Contact Management API with User Authentication & Authorization
+Client Requirement
+The company has successfully deployed the Contact Management REST API.
+However, there is a major security issue.
+Currently, anyone who knows the API URL can access, modify, or delete contact information.
+To protect sensitive customer data, the company wants to introduce a secure authentication and authorization system.
+Only registered users should be able to access the API, and different users should have different permissions based on their roles.
+The application should implement secure authentication using JWT (JSON Web Tokens) and password hashing.
+Learning Goal
+Unlike previous projects where APIs were publicly accessible, every protected endpoint should require a valid authenticated user.
+Example:
+Client
+↓
+Login
+↓
+JWT Token Generated
+↓
+Client sends Token
+↓
+API verifies Token
+↓
+Authorized Request
+↓
+Database
+↓
+Response
+Functional Requirements
+Public Endpoints
+These endpoints should be accessible without logging in.
+Register User
+Method
+POST
+Endpoint
+/auth/register
+Purpose
+Create a new user account.
+Login
+Method
+POST
+Endpoint
+/auth/login
+Purpose
+Verify user credentials.
+Generate JWT token.
+Health Check
+Method
+GET
+Endpoint
+/
+Purpose
+Verify API is running.
+Protected Endpoints
+Every contact-related endpoint must require a valid JWT token.
+Example:
+GET /contacts
+Authorization Header
+Authorization: Bearer <JWT_TOKEN>
+Without token:
+Return
+401 Unauthorized
+User Information
+Each user should contain:
+User ID
+Full Name
+Username
+Email
+Password Hash
+Role
+Created Date
+Active Status
+Example
+User ID : U101
+Name : Aayush
+Username : aayush
+Email : aayush@email.com
+Password : (hashed)
+Role : Admin
+Created : 10-07-2026
+Status : Active
+User Roles
+The system should support three roles.
+Admin
+Can:
+Create users
+View contacts
+Add contacts
+Update contacts
+Delete contacts
+View statistics
+Employee
+Can:
+View contacts
+Add contacts
+Update contacts
+Cannot:
+Delete contacts
+Manage users
+Viewer
+Can:
+View contacts only
+Cannot:
+Add
+Update
+Delete
+Feature 1 — User Registration
+Endpoint
+POST /auth/register
+Request
+{
+    "full_name": "Aayush Thakkar",
+    "username": "aayush",
+    "email": "aayush@email.com",
+    "password": "MyPassword123",
+    "role": "Employee"
+}
+Requirements
+Username must be unique.
+Email must be unique.
+Password should never be stored in plain text.
+Hash the password before saving.
+Feature 2 — Login
+Endpoint
+POST /auth/login
+Request
+{
+    "username": "aayush",
+    "password": "MyPassword123"
+}
+Workflow
+Verify username.
+↓
+Verify password hash.
+↓
+Generate JWT Token.
+↓
+Return token.
+Example Response
+{
+    "access_token": "<JWT_TOKEN>",
+    "token_type": "bearer"
+}
+Feature 3 — Password Hashing
+Passwords must be hashed before storing.
+Never store plain text passwords.
+Use a secure hashing algorithm.
+During login:
+Entered Password
+↓
+Hash Verification
+↓
+Match Stored Hash
+Feature 4 — JWT Authentication
+Every protected endpoint must:
+Extract JWT
+↓
+Verify signature
+↓
+Verify expiration
+↓
+Identify current user
+↓
+Allow request
+Feature 5 — Authorization
+Before executing an operation:
+Verify user role.
+Example
+Viewer
+↓
+DELETE /contacts
+↓
+403 Forbidden
+Feature 6 — Current User
+Endpoint
+GET /users/me
+Returns information about the currently logged-in user.
+Example
+{
+    "username": "aayush",
+    "role": "Admin",
+    "email": "aayush@email.com"
+}
+Feature 7 — Change Password
+Endpoint
+PUT /users/change-password
+Workflow
+Enter current password.
+↓
+Verify current password.
+↓
+Hash new password.
+↓
+Update database.
+Feature 8 — Logout
+Since JWT is stateless:
+Client simply removes the token.
+(Optional)
+Implement token blacklist.
+Feature 9 — User Management (Admin Only)
+Admin can:
+View users
+Disable users
+Activate users
+Delete users
+Employee cannot access these endpoints.
+Database Tables
+Users
+Columns
+user_id
+full_name
+username
+email
+password_hash
+role
+is_active
+created_at
+Contacts
+Reuse the existing contacts table.
+No changes required.
+API Endpoints
+Public
+POST   /auth/register
+POST   /auth/login
+GET    /
+Protected
+GET    /contacts
+POST   /contacts
+PUT    /contacts/{id}
+DELETE /contacts/{id}
+GET    /users/me
+PUT    /users/change-password
+GET    /users
+PUT    /users/{id}/disable
+PUT    /users/{id}/enable
+DELETE /users/{id}
+Validation Rules
+Username
+Required
+Unique
+Email
+Required
+Valid email
+Unique
+Password
+Minimum:
+8 characters
+Should contain:
+Uppercase
+Lowercase
+Number
+Role
+Must be one of:
+Admin
+Employee
+Viewer
+Error Handling
+401
+{
+    "detail": "Invalid username or password"
+}
+401
+{
+    "detail": "Token has expired"
+}
+403
+{
+    "detail": "Permission denied"
+}
+404
+{
+    "detail": "User not found"
+}
+Suggested Project Structure
+ContactAPI/
+│── app.py
+│── database.py
+│── models.py
+│── schemas.py
+│── crud.py
+│── auth.py
+│── security.py
+│── dependencies.py
+│── routers/
+│     ├── auth.py
+│     ├── contacts.py
+│     └── users.py
+│── contacts.db
+│── requirements.txt
+Deliverables
+Your final project should include:
+✓ User Registration
+✓ Secure Login
+✓ Password Hashing
+✓ JWT Authentication
+✓ Authorization
+✓ Protected APIs
+✓ Current User API
+✓ Change Password
+✓ User Management
+✓ Role-Based Access Control
+✓ Secure FastAPI Architecture
+Design Constraints
+Never store plain text passwords.
+Use password hashing for every user.
+Generate JWT tokens after successful login.
+Protect all contact endpoints.
+Keep authentication logic separate from business logic.
+Use dependency injection to obtain the current authenticated user.
+Validate user roles before executing protected operations.
+Return proper HTTP status codes.
+Keep modules focused on a single responsibility.
+Mentor Challenge (No Hints)
+Before writing any code, answer these questions:
+How many database tables will you need?
+Which module should generate JWT tokens?
+Which module should hash passwords?
+How will protected routes identify the current user?
+How will role-based authorization work?
+Which endpoints should remain public?
+Which endpoints should require authentication?
+How will password verification differ from password hashing?
+Where should authentication logic live?
+How will you keep authentication separate from contact management logic?
+Learning Outcomes
+By completing this project, you will learn:
+Authentication vs Authorization
+Password Hashing
+JWT (JSON Web Tokens)
+Secure Login Systems
+Protected FastAPI Endpoints
+Role-Based Access Control (RBAC)
+Dependency Injection
+Security Best Practices
+Sessionless Authentication
+Building production-ready secure APIs
+Mentor Rule
+This project is your introduction to application security.
+In previous projects, you focused on functionality.
+Now, your mindset should become:
+"Who is making this request?"
+before asking:
+"What operation should they be allowed to perform?"
+Every API endpoint should first verify identity (authentication) and then verify permission (authorization). That's how production backend systems are designed.
+ 
