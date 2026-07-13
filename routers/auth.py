@@ -11,7 +11,20 @@ router = APIRouter(
 
 @router.post("/register")
 def register_user(user: UserCreate):
-    crud.create_user(user)
+    allowed_roles = [
+    "Admin",
+    "Employee",
+    "Viewer"
+]
+
+    if user.role not in allowed_roles:
+
+        raise HTTPException(
+            status_code=400,
+            detail="Invalid role"
+        )
+    
+    user_id = crud.create_user(user)
     return {
         "message": "User registered successfully",
         "user_id": user_id
@@ -39,6 +52,13 @@ def login(
         raise HTTPException(
             status_code=401,
             detail="Invalid username or password"
+        )
+    
+    if user["is_active"] == 0:
+
+        raise HTTPException(
+            status_code=403,
+            detail="User account is disabled"
         )
 
 

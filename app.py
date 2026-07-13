@@ -1,11 +1,11 @@
 from fastapi import FastAPI
 from database import create_tables
 from routers import auth, users
-
+from routers import contacts
 
 
 app = FastAPI()
-
+app.include_router(contacts.router)
 app.include_router(auth.router)
 app.include_router(users.router)
 

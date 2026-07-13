@@ -22,3 +22,24 @@ def get_current_user(token: str = Depends(oauth2_scheme)):
         raise HTTPException(status_code=401, detail="User not found")
 
     return user
+
+def require_role(allowed_roles: list):
+
+    def role_checker(
+        current_user=Depends(get_current_user)
+    ):
+
+        print("Current User:", current_user)
+        print("User Role:", current_user["role"])
+        print("Allowed Roles:", allowed_roles)
+
+        if current_user["role"] not in allowed_roles:
+
+            raise HTTPException(
+                status_code=403,
+                detail="Permission denied"
+            )
+
+        return current_user
+
+    return role_checker
