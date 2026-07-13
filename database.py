@@ -1,5 +1,6 @@
 import sqlite3
 
+
 DATABASE_NAME = "contacts.db"
 
 def get_connection():
